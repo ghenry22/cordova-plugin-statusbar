@@ -25,10 +25,13 @@
 
 #import "CDVStatusBar.h"
 #import <objc/runtime.h>
+#import <WebKit/WebKit.h>
 #import <Cordova/CDVViewController.h>
 
 static const void *kHideStatusBar = &kHideStatusBar;
 static const void *kStatusBarStyle = &kStatusBarStyle;
+
+static NSString* const StatusBarStaticChannel = @"StatusBarStaticChannel";
 
 @interface CDVViewController (StatusBar)
 
@@ -107,6 +110,10 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
         [weakSelf resizeStatusBarBackgroundView];
         [weakSelf resizeWebView];
     });
+
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [pluginResult setKeepCallbackAsBool:YES];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:StatusBarStaticChannel];
 }
 
 - (void)pluginInitialize
@@ -150,7 +157,7 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
     } else {
         self.webView.scrollView.scrollsToTop = NO;
     }
- 
+
     // blank scroll view to intercept status bar taps
     UIScrollView *fakeScrollView = [[UIScrollView alloc] initWithFrame:UIScreen.mainScreen.bounds];
     fakeScrollView.delegate = self;
@@ -186,6 +193,19 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
     [self.commandDelegate sendPluginResult:result callbackId:_eventsCallbackId];
 }
 
+- (void)disableViewportFitForiOS12:(BOOL)disable {
+    if (_eventsCallbackId == nil) {
+        return;
+    }
+
+    // https://github.com/apache/cordova-ios/issues/417 does not apply to WKWebView, therefore always return NO when running there
+    // This entire workaround to disable viewport fit injection is to be _removed_ once WKWebView is the _sole_ option
+    NSDictionary* payload = @{@"type": @"viewport", @"disableiOS12": [self.webView isKindOfClass: [WKWebView class]] ? @(NO) : @(disable)};
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:payload];
+    [result setKeepCallbackAsBool:YES];
+    [self.commandDelegate sendPluginResult:result callbackId:_eventsCallbackId];
+}
+
 - (void) _ready:(CDVInvokedUrlCommand*)command
 {
     _eventsCallbackId = command.callbackId;
@@ -197,6 +217,9 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
             [self resizeWebView];
         }
     }
+
+    BOOL disableViewportFit = [[self.commandDelegate.settings objectForKey:[@"DisableViewportFitForiOS12" lowercaseString]] boolValue];
+    [self disableViewportFitForiOS12:disableViewportFit];
 }
 
 - (void) initializeStatusBarBackgroundView
@@ -255,6 +278,12 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
     }
 
     self.statusBarOverlaysWebView = [value boolValue];
+
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:_statusBarOverlaysWebView];
+
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+
+
 }
 
 - (void) refreshStatusBarAppearance
@@ -388,6 +417,10 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
 
         _statusBarBackgroundView.hidden = YES;
     }
+
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void) showStatusBar
@@ -425,6 +458,11 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
 
         _statusBarBackgroundView.hidden = NO;
     }
+
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+
 }
 
 -(void)resizeStatusBarBackgroundView {
@@ -471,7 +509,7 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
     }
     frame.size.height -= frame.origin.y;
     self.webView.frame = frame;
-    
+
 }
 
 - (void) dealloc
@@ -480,6 +518,21 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
     [[NSNotificationCenter defaultCenter]removeObserver:self name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
 }
 
+- (void) isStatusBarOverlayingWebview:(CDVInvokedUrlCommand*)command{
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:_statusBarOverlaysWebView];
+
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void) getStatusBarHeight:(CDVInvokedUrlCommand*)command{
+
+    CGSize statusBarSize = [[UIApplication sharedApplication] statusBarFrame].size;
+    int statusBarHeight = MIN(statusBarSize.width, statusBarSize.height);
+
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:statusBarHeight];
+
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
 
 #pragma mark - UIScrollViewDelegate
 

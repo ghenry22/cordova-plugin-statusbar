@@ -22,6 +22,9 @@
 /* global cordova */
 
 var exec = require('cordova/exec');
+var channel = require('cordova/channel');
+
+var IOS_11_VERSION = 11;
 
 var namedColors = {
     black: '#000000',
@@ -44,7 +47,7 @@ var StatusBar = {
     isVisible: true,
 
     overlaysWebView: function (doOverlay) {
-        exec(null, null, 'StatusBar', 'overlaysWebView', [doOverlay]);
+        exec(checkIfStatusBarOverlaysWebview, null, "StatusBar", "overlaysWebView", [doOverlay]);
     },
 
     styleDefault: function () {
@@ -85,12 +88,12 @@ var StatusBar = {
     },
 
     hide: function () {
-        exec(null, null, 'StatusBar', 'hide', []);
+        exec(onVisibilityChange, null, "StatusBar", "hide", []);
         StatusBar.isVisible = false;
     },
 
     show: function () {
-        exec(null, null, 'StatusBar', 'show', []);
+        exec(onVisibilityChange, null, "StatusBar", "show", []);
         StatusBar.isVisible = true;
     }
 };
@@ -114,4 +117,112 @@ window.setTimeout(function () {
     );
 }, 0);
 
+var onVisibilityChange = function (){
+
+    exec(checkIfStatusBarOverlaysWebview,
+         null,
+         "StatusBar",
+         "isStatusBarOverlayingWebview",
+        []);
+
+}
+
+
+var checkIfStatusBarOverlaysWebview = function(overlaying){
+
+    var overlayClassName = "statusbar-overlay";
+
+    var statusBarOverlaysWebview = document.body.className.indexOf(overlayClassName);
+
+    if(StatusBar.isVisible){
+        if(overlaying){
+            if(statusBarOverlaysWebview < 0){
+                document.body.className += (document.body.className.length > 0 ? " ":"")+overlayClassName;
+            }
+
+            addStatusBarDataElement();
+        }
+        else{
+            document.body.className = document.body.className.replace(overlayClassName,"").trim();
+            document.body.removeAttribute("data-status-bar-height");
+        }
+    }
+    else {
+        if(statusBarOverlaysWebview >= 0){
+            document.body.className = document.body.className.replace(overlayClassName,"").trim();
+            document.body.removeAttribute("data-status-bar-height");
+        }
+    }
+
+}
+
+
+var addStatusBarDataElement = function(){
+
+    var getStatusBarHeight = function (height){
+        document.body.setAttribute("data-status-bar-height",height);
+        document.body.style.setProperty('--status-bar-height', height + "px");
+    };
+
+    exec(getStatusBarHeight,
+         null,
+         "StatusBar",
+         "getStatusBarHeight",
+        []);
+
+}
+
+
+var injectViewportMetaTag = function(){
+
+    if (/(iPad)|(iPhone)/i.test(navigator.userAgent)) {
+        var version = navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
+
+        if(Array.isArray(version) && version.length > 1 && !isNaN(version[1])){
+            if(Number(version[1]) == IOS_11_VERSION || (Number(version[1]) > IOS_11_VERSION && !StatusBar.disableViewportFitiOS12)){
+                var viewportMetaElem = document.getElementsByTagName("meta").namedItem("viewport");
+
+                if(viewportMetaElem && !viewportMetaElem.content.includes("viewport-fit")) {
+                    viewportMetaElem.setAttribute("content", "viewport-fit=cover," + viewportMetaElem.content)
+                }
+            }
+        }
+    }
+
+}
+
+
 module.exports = StatusBar;
+
+
+// Called after 'deviceready' event
+channel.deviceready.subscribe(function () {
+
+    exec(function (res) {
+            if (typeof res == 'object') {
+                if (res.type == 'tap') {
+                    cordova.fireWindowEvent('statusTap');
+                }
+                else{
+                    if (res.type == 'viewport'){
+                        StatusBar.disableViewportFitiOS12 = res.disableiOS12;
+                        injectViewportMetaTag();
+                    }
+                }
+            } else {
+                StatusBar.isVisible = res;
+            }
+        }, null, "StatusBar", "_ready", []);
+
+
+    onVisibilityChange();
+});
+
+// Called by the native side when a configuration change
+cordova.callbacks["StatusBarStaticChannel"] = {
+    success: function() {
+        onVisibilityChange();
+    },
+    fail: function() {
+    }
+};
