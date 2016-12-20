@@ -255,6 +255,12 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
     }
 
     self.statusBarOverlaysWebView = [value boolValue];
+    
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:_statusBarOverlaysWebView];
+    
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    
+    
 }
 
 - (void) refreshStatusBarAppearance
@@ -394,6 +400,10 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
 
         _statusBarBackgroundView.hidden = YES;
     }
+    
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void) showStatusBar
@@ -440,6 +450,11 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
 
         _statusBarBackgroundView.hidden = NO;
     }
+    
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    
 }
 
 -(void)resizeWebView
@@ -481,6 +496,12 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
 {
     [[UIApplication sharedApplication] removeObserver:self forKeyPath:@"statusBarHidden"];
     [[NSNotificationCenter defaultCenter]removeObserver:self name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
+}
+
+- (void) isStatusBarOverlayingWebview:(CDVInvokedUrlCommand*)command{
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:_statusBarOverlaysWebView];
+    
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 

@@ -22,6 +22,7 @@
 /* global cordova */
 
 var exec = require('cordova/exec');
+var channel = require('cordova/channel');
 
 var namedColors = {
     "black": "#000000",
@@ -45,7 +46,7 @@ var StatusBar = {
     isVisible: true,
 
     overlaysWebView: function (doOverlay) {
-        exec(null, null, "StatusBar", "overlaysWebView", [doOverlay]);
+        exec(checkIfStatusBarOverlaysWebview, null, "StatusBar", "overlaysWebView", [doOverlay]);
     },
 
     styleDefault: function () {
@@ -86,28 +87,71 @@ var StatusBar = {
     },
 
     hide: function () {
-        exec(null, null, "StatusBar", "hide", []);
+        exec(onVisibilityChange, null, "StatusBar", "hide", []);
         StatusBar.isVisible = false;
     },
 
     show: function () {
-        exec(null, null, "StatusBar", "show", []);
+        exec(onVisibilityChange, null, "StatusBar", "show", []);
         StatusBar.isVisible = true;
     }
 
 };
 
-// prime it. setTimeout so that proxy gets time to init
-window.setTimeout(function () {
-    exec(function (res) {
-        if (typeof res == 'object') {
-            if (res.type == 'tap') {
-                cordova.fireWindowEvent('statusTap');
-            }
-        } else {
-            StatusBar.isVisible = res;
+
+var onVisibilityChange = function (){
+  
+    exec(checkIfStatusBarOverlaysWebview, 
+         null,
+         "StatusBar", 
+         "isStatusBarOverlayingWebview",
+        []);
+
+
+}
+
+
+var checkIfStatusBarOverlaysWebview = function(overlaying){
+
+    var overlayClassName = "statusbar-overlay";
+
+    var statusBarOverlaysWebview = document.body.className.indexOf(overlayClassName);
+
+    if(StatusBar.isVisible){
+        if(overlaying){
+            if(statusBarOverlaysWebview < 0){
+                    document.body.className += " "+overlayClassName;            
+            }  
         }
-    }, null, "StatusBar", "_ready", []);
-}, 0);
+        else{
+            document.body.className = document.body.className.replace(overlayClassName,"");
+        }      
+    }
+    else {
+        if(statusBarOverlaysWebview >= 0){
+            document.body.className = document.body.className.replace(overlayClassName,"");
+        }         
+    }
+
+}
+
 
 module.exports = StatusBar;
+
+
+// Called after 'deviceready' event
+channel.deviceready.subscribe(function () {
+
+    exec(function (res) {
+            if (typeof res == 'object') {
+                if (res.type == 'tap') {
+                    cordova.fireWindowEvent('statusTap');
+                }
+            } else {
+                StatusBar.isVisible = res;
+            }
+        }, null, "StatusBar", "_ready", []);
+    
+  
+    onVisibilityChange();
+});
