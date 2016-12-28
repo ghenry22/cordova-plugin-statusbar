@@ -38,6 +38,8 @@ import org.json.JSONException;
 public class StatusBar extends CordovaPlugin {
     private static final String TAG = "StatusBar";
 
+    private boolean doOverlay;
+
     /**
      * Sets the context of the Command. This can then be used to do things like
      * get file paths associated with the Activity.
@@ -53,13 +55,21 @@ public class StatusBar extends CordovaPlugin {
         this.cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                doOverlay = preferences.getBoolean("StatusBarOverlaysWebView", false);
+
                 // Clear flag FLAG_FORCE_NOT_FULLSCREEN which is set initially
                 // by the Cordova.
                 Window window = cordova.getActivity().getWindow();
                 window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
 
-                // Read 'StatusBarBackgroundColor' from config.xml, default is #000000.
-                setStatusBarBackgroundColor(preferences.getString("StatusBarBackgroundColor", "#000000"));
+                if(doOverlay && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+                    // Read 'StatusBarOverlaysWebView' from config.xml, and if the value is true
+                    // add a translucent status flag to the window.
+                    window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                } else {
+                    // Read 'StatusBarBackgroundColor' from config.xml, default is #000000.
+                    setStatusBarBackgroundColor(preferences.getString("StatusBarBackgroundColor", "#000000"));
+                }
             }
         });
     }
@@ -84,6 +94,38 @@ public class StatusBar extends CordovaPlugin {
             return true;
         }
 
+        if("isStatusBarOverlayingWebview".equals(action)) {
+            boolean statusBarVisible = (window.getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) == 0;
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, doOverlay && statusBarVisible));
+            return true;
+        }
+
+        if("overlaysWebView".equals(action)) {
+            this.cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        doOverlay = args.getBoolean(0);
+                    } catch (JSONException ignore) {
+                        LOG.e(TAG, "Invalid boolean argument, please use true or false values");
+                    }
+
+                    if (doOverlay) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                            window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                        } else {
+                            LOG.e(TAG, "Translucent status bar not supported in your Android version");
+                        }
+                    } else {
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                    }
+
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
+                }
+            });
+            return true;
+        }
+
         if ("show".equals(action)) {
             this.cordova.getActivity().runOnUiThread(new Runnable() {
                 @Override
@@ -101,6 +143,9 @@ public class StatusBar extends CordovaPlugin {
                     // CB-11197 We still need to update LayoutParams to force status bar
                     // to be hidden when entering e.g. text fields
                     window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+                    // Return Ok to execute the onVisibilityChange function
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
                 }
             });
             return true;
@@ -123,6 +168,9 @@ public class StatusBar extends CordovaPlugin {
                     // CB-11197 We still need to update LayoutParams to force status bar
                     // to be hidden when entering e.g. text fields
                     window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+                    // Return Ok to execute the onVisibilityChange function
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
                 }
             });
             return true;
