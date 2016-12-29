@@ -122,7 +122,8 @@ public class StatusBar extends CordovaPlugin {
                         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
                     }
 
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
+                    boolean statusBarVisible = (window.getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) == 0;
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, doOverlay && statusBarVisible));
                 }
             });
             return true;
