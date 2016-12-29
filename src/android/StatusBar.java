@@ -112,11 +112,13 @@ public class StatusBar extends CordovaPlugin {
 
                     if (doOverlay) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                            window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
                             window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
                         } else {
                             LOG.e(TAG, "Translucent status bar not supported in your Android version");
                         }
                     } else {
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
                         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
                     }
 
