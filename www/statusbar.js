@@ -153,7 +153,6 @@ var checkIfStatusBarOverlaysWebview = function(overlaying){
             document.body.removeAttribute("data-status-bar-height");
         }
     }
-
 }
 
 
@@ -189,6 +188,20 @@ var injectViewportMetaTag = function(){
         }
     }
 
+}
+
+
+var addStatusBarDataElement = function(){
+
+    var getStatusBarHeight = function (height){
+        document.body.setAttribute("data-status-bar-height",height);
+    };
+
+    exec(getStatusBarHeight,
+         null,
+         "StatusBar",
+         "getStatusBarHeight",
+        []);
 }
 
 
