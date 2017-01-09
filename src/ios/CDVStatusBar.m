@@ -504,6 +504,17 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (void) getStatusBarHeight:(CDVInvokedUrlCommand*)command{
+    
+    CGSize statusBarSize = [[UIApplication sharedApplication] statusBarFrame].size;
+    int statusBarHeight = MIN(statusBarSize.width, statusBarSize.height);
+    
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:statusBarHeight];
+    
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+
 
 #pragma mark - UIScrollViewDelegate
 
