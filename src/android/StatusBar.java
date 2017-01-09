@@ -45,8 +45,6 @@ public class StatusBar extends CordovaPlugin {
 
     private boolean doOverlay;
 
-    private int statusBarHeight;
-
     /**
      * Sets the context of the Command. This can then be used to do things like
      * get file paths associated with the Activity.
@@ -77,8 +75,6 @@ public class StatusBar extends CordovaPlugin {
                     // Read 'StatusBarBackgroundColor' from config.xml, default is #000000.
                     setStatusBarBackgroundColor(preferences.getString("StatusBarBackgroundColor", "#000000"));
                 }
-
-                statusBarHeight = getStatusBarHeight();
             }
         });
     }
@@ -131,8 +127,6 @@ public class StatusBar extends CordovaPlugin {
                         window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
                         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
                     }
-
-                    statusBarHeight = getStatusBarHeight();
 
                     boolean statusBarVisible = (window.getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) == 0;
                     callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, doOverlay && statusBarVisible));
@@ -206,6 +200,7 @@ public class StatusBar extends CordovaPlugin {
         }
 
         if ("getStatusBarHeight".equals(action)) {
+            int statusBarHeight = getStatusBarHeight();
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, statusBarHeight));
             return true;
         }
