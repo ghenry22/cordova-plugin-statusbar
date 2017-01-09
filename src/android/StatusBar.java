@@ -56,8 +56,6 @@ public class StatusBar extends CordovaPlugin {
 
     private boolean doOverlay;
 
-    private int statusBarHeight;
-
     /**
      * Sets the context of the Command. This can then be used to do things like
      * get file paths associated with the Activity.
@@ -115,8 +113,6 @@ public class StatusBar extends CordovaPlugin {
                     }
                     setStatusBarStyle(styleSetting);
                 }
-
-                statusBarHeight = getStatusBarHeight();
             }
         });
     }
