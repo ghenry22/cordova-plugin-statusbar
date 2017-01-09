@@ -20,8 +20,13 @@
 package org.apache.cordova.statusbar;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Build;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -39,6 +44,8 @@ public class StatusBar extends CordovaPlugin {
     private static final String TAG = "StatusBar";
 
     private boolean doOverlay;
+
+    private int statusBarHeight;
 
     /**
      * Sets the context of the Command. This can then be used to do things like
@@ -70,6 +77,8 @@ public class StatusBar extends CordovaPlugin {
                     // Read 'StatusBarBackgroundColor' from config.xml, default is #000000.
                     setStatusBarBackgroundColor(preferences.getString("StatusBarBackgroundColor", "#000000"));
                 }
+
+                statusBarHeight = getStatusBarHeight();
             }
         });
     }
@@ -104,6 +113,7 @@ public class StatusBar extends CordovaPlugin {
             this.cordova.getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+
                     try {
                         doOverlay = args.getBoolean(0);
                     } catch (JSONException ignore) {
@@ -121,6 +131,8 @@ public class StatusBar extends CordovaPlugin {
                         window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
                         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
                     }
+
+                    statusBarHeight = getStatusBarHeight();
 
                     boolean statusBarVisible = (window.getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) == 0;
                     callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, doOverlay && statusBarVisible));
@@ -193,6 +205,11 @@ public class StatusBar extends CordovaPlugin {
             return true;
         }
 
+        if ("getStatusBarHeight".equals(action)) {
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, statusBarHeight));
+            return true;
+        }
+
         return false;
     }
 
@@ -214,5 +231,22 @@ public class StatusBar extends CordovaPlugin {
                 }
             }
         }
+    }
+
+    // A method to find height of the status bar
+    public int getStatusBarHeight() {
+
+        int statusbarHeight = 0;
+        int resourceId = this.cordova.getActivity().getApplicationContext().getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            statusbarHeight =  (int)this.cordova.getActivity().getApplicationContext().getResources().getDimension(resourceId);
+        }
+
+        DisplayMetrics metrics = this.cordova.getActivity().getApplicationContext().getResources().getDisplayMetrics();
+        float densityDpi = metrics.density;
+
+        int result = (int)(statusbarHeight / densityDpi);
+
+        return result;
     }
 }

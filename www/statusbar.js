@@ -107,7 +107,6 @@ var onVisibilityChange = function (){
          "isStatusBarOverlayingWebview",
         []);
 
-
 }
 
 
@@ -120,19 +119,37 @@ var checkIfStatusBarOverlaysWebview = function(overlaying){
     if(StatusBar.isVisible){
         if(overlaying){
             if(statusBarOverlaysWebview < 0){
-                    document.body.className += " "+overlayClassName;            
+                document.body.className += " "+overlayClassName;            
             }  
+
+            addStatusBarDataElement();
         }
         else{
-            document.body.className = document.body.className.replace(overlayClassName,"");
+            document.body.className = document.body.className.replace(overlayClassName,"").trim();
+            document.body.removeAttribute("data-status-bar-height");
         }      
     }
     else {
         if(statusBarOverlaysWebview >= 0){
-            document.body.className = document.body.className.replace(overlayClassName,"");
+            document.body.className = document.body.className.replace(overlayClassName,"").trim();
+            document.body.removeAttribute("data-status-bar-height");
         }         
     }
 
+}
+
+
+var addStatusBarDataElement = function(){
+   
+    var getStatusBarHeight = function (height){
+        document.body.setAttribute("data-status-bar-height",height);
+    };
+
+    exec(getStatusBarHeight, 
+         null,
+         "StatusBar", 
+         "getStatusBarHeight",
+        []);
 }
 
 
