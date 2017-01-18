@@ -119,7 +119,7 @@ var checkIfStatusBarOverlaysWebview = function(overlaying){
     if(StatusBar.isVisible){
         if(overlaying){
             if(statusBarOverlaysWebview < 0){
-                document.body.className += " "+overlayClassName;            
+                document.body.className += (document.body.className.length > 0 ? " ":"")+overlayClassName;
             }  
 
             addStatusBarDataElement();
