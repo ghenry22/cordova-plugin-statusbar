@@ -20,20 +20,11 @@
 package org.apache.cordova.statusbar;
 
 import android.app.Activity;
-<<<<<<< HEAD
 import android.content.res.Configuration;
-=======
-import android.content.Context;
-import android.content.res.TypedArray;
->>>>>>> 64c788d (Adding a data attribute to body with the status bar height (Android))
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Build;
 import android.util.DisplayMetrics;
-<<<<<<< HEAD
-=======
-import android.util.Log;
->>>>>>> 64c788d (Adding a data attribute to body with the status bar height (Android))
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
