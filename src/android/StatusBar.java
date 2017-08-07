@@ -67,6 +67,8 @@ public class StatusBar extends CordovaPlugin {
             public void run() {
                 doOverlay = preferences.getBoolean("StatusBarOverlaysWebView", false);
 
+                ActivityAssistant.getInstance().assistActivity(cordova.getActivity());
+
                 // Clear flag FLAG_FORCE_NOT_FULLSCREEN which is set initially
                 // by the Cordova.
                 Window window = cordova.getActivity().getWindow();
