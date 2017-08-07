@@ -62,6 +62,8 @@ public class StatusBar extends CordovaPlugin {
             public void run() {
                 doOverlay = preferences.getBoolean("StatusBarOverlaysWebView", false);
 
+                ActivityAssistant.getInstance().assistActivity(cordova.getActivity());
+
                 // Clear flag FLAG_FORCE_NOT_FULLSCREEN which is set initially
                 // by the Cordova.
                 Window window = cordova.getActivity().getWindow();
@@ -71,6 +73,8 @@ public class StatusBar extends CordovaPlugin {
                     // Read 'StatusBarOverlaysWebView' from config.xml, and if the value is true
                     // add a translucent status flag to the window.
                     window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+                    ActivityAssistant.getInstance().applyGlobalLayoutListener();
                 } else {
                     // Read 'StatusBarBackgroundColor' from config.xml, default is #000000.
                     setStatusBarBackgroundColor(preferences.getString("StatusBarBackgroundColor", "#000000"));
@@ -123,6 +127,8 @@ public class StatusBar extends CordovaPlugin {
                         } else {
                             LOG.e(TAG, "Translucent status bar not supported in your Android version");
                         }
+
+                        ActivityAssistant.getInstance().applyGlobalLayoutListener();
                     } else {
                         window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
