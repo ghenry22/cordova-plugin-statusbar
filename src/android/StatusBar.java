@@ -69,7 +69,10 @@ public class StatusBar extends CordovaPlugin {
                 Window window = cordova.getActivity().getWindow();
                 window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
 
-                if(doOverlay && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+                // Added to override logic if plugin is installed in OutSystems Now app.
+                boolean isOutSystemsNow = preferences.getBoolean("IsOutSystemsNow", false);
+
+                if(isOutSystemsNow || (doOverlay && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)){
                     // Read 'StatusBarOverlaysWebView' from config.xml, and if the value is true
                     // add a translucent status flag to the window.
                     window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
