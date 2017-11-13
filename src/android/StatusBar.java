@@ -45,8 +45,6 @@ public class StatusBar extends CordovaPlugin {
 
     private boolean doOverlay;
 
-    private boolean doOverlay;
-
     /**
      * Sets the context of the Command. This can then be used to do things like
      * get file paths associated with the Activity.
