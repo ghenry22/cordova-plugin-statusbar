@@ -116,38 +116,6 @@ public class StatusBar extends CordovaPlugin {
             return true;
         }
 
-        if("overlaysWebView".equals(action)) {
-            this.cordova.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-
-                    try {
-                        doOverlay = args.getBoolean(0);
-                    } catch (JSONException ignore) {
-                        LOG.e(TAG, "Invalid boolean argument, please use true or false values");
-                    }
-
-                    if (doOverlay) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                            window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-                        } else {
-                            LOG.e(TAG, "Translucent status bar not supported in your Android version");
-                        }
-
-                        ActivityAssistant.getInstance().applyGlobalLayoutListener();
-                    } else {
-                        window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-                    }
-
-                    boolean statusBarVisible = (window.getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) == 0;
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, doOverlay && statusBarVisible));
-                }
-            });
-            return true;
-        }
-
         if ("show".equals(action)) {
             this.cordova.getActivity().runOnUiThread(new Runnable() {
                 @Override
@@ -218,14 +186,15 @@ public class StatusBar extends CordovaPlugin {
             return true;
         }
 
-
         if ("overlaysWebView".equals(action)) {
             if (Build.VERSION.SDK_INT >= 21) {
                 this.cordova.getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            setStatusBarTransparent(args.getBoolean(0));
+                            doOverlay = args.getBoolean(0);
+                            setStatusBarTransparent(doOverlay);
+                            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, doOverlay));
                         } catch (JSONException ignore) {
                             LOG.e(TAG, "Invalid boolean argument");
                         }
@@ -233,7 +202,10 @@ public class StatusBar extends CordovaPlugin {
                 });
                 return true;
             }
-            else return args.getBoolean(0) == false;
+            else {
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, doOverlay));
+                return doOverlay == false;
+            }
         }
 
         if ("styleDefault".equals(action)) {
