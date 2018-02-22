@@ -49,5 +49,4 @@
 
 - (void) isStatusBarOverlayingWebview:(CDVInvokedUrlCommand*)command;
 - (void) getStatusBarHeight:(CDVInvokedUrlCommand*)command;
-
 @end
