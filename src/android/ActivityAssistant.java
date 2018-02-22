@@ -65,7 +65,8 @@ public class ActivityAssistant {
         this.mChildOfContent.getWindowVisibleDisplayFrame(r);
 
         boolean fullScreen = (activity.getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
-        boolean translucentStatusBar = (activity.getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS) != 0;
+        boolean translucentStatusBar = (activity.getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS) != 0
+                || (activity.getWindow().getAttributes().flags & (View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)) != 0;
 
         int usableHeight = r.bottom - r.top;
 

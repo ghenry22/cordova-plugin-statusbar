@@ -75,8 +75,15 @@ public class StatusBar extends CordovaPlugin {
 
                 if(isOutSystemsNow || (doOverlay && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)){
                     // Read 'StatusBarOverlaysWebView' from config.xml, and if the value is true
-                    // add a translucent status flag to the window.
-                    window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        setStatusBarTransparent(doOverlay);
+                    }
+                    else if(Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+                        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                    }
+                    else{
+                        LOG.e(TAG, "Translucent status bar not supported in your Android version");
+                    }
 
                     ActivityAssistant.getInstance().applyGlobalLayoutListener();
                 } else {
@@ -187,16 +194,33 @@ public class StatusBar extends CordovaPlugin {
         }
 
         if ("overlaysWebView".equals(action)) {
-            if (Build.VERSION.SDK_INT >= 21) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 this.cordova.getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
                             doOverlay = args.getBoolean(0);
-                            setStatusBarTransparent(doOverlay);
-                            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, doOverlay));
                         } catch (JSONException ignore) {
-                            LOG.e(TAG, "Invalid boolean argument");
+                            LOG.e(TAG, "Invalid boolean argument, please use true or false values");
+                        }
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            setStatusBarTransparent(doOverlay);
+                        } else if(Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+                            if(doOverlay) {
+                                window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                                window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                            } else {
+                                window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                            }
+                        }
+                        else {
+                            LOG.e(TAG, "Translucent status bar not supported in your Android version");
+                        }
+
+                        if(doOverlay) {
+                            ActivityAssistant.getInstance().applyGlobalLayoutListener();
                         }
                     }
                 });
@@ -251,6 +275,7 @@ public class StatusBar extends CordovaPlugin {
         return false;
     }
 
+    // Only used with API 21+
     private void setStatusBarBackgroundColor(final String colorPref) {
         if (Build.VERSION.SDK_INT >= 21) {
             if (colorPref != null && !colorPref.isEmpty()) {
@@ -288,6 +313,7 @@ public class StatusBar extends CordovaPlugin {
         return result;
     }
 
+    // Only used with API 21+
     private void setStatusBarTransparent(final boolean transparent) {
         if (Build.VERSION.SDK_INT >= 21) {
             final Window window = cordova.getActivity().getWindow();
