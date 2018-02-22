@@ -286,6 +286,7 @@ public class StatusBar extends CordovaPlugin {
         return false;
     }
 
+    // Only used with API 21+
     private void setStatusBarBackgroundColor(final String colorPref) {
         if (Build.VERSION.SDK_INT >= 21) {
             if (colorPref != null && !colorPref.isEmpty()) {
@@ -323,6 +324,7 @@ public class StatusBar extends CordovaPlugin {
         return result;
     }
 
+    // Only used with API 21+
     private void setStatusBarTransparent(final boolean transparent) {
         if (Build.VERSION.SDK_INT >= 21) {
             final Window window = cordova.getActivity().getWindow();
