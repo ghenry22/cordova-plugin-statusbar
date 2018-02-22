@@ -39,6 +39,7 @@ import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PluginResult;
 import org.json.JSONException;
+import java.util.Arrays;
 
 public class StatusBar extends CordovaPlugin {
     private static final String TAG = "StatusBar";
@@ -74,13 +75,23 @@ public class StatusBar extends CordovaPlugin {
 
                 if(isOutSystemsNow || (doOverlay && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)){
                     // Read 'StatusBarOverlaysWebView' from config.xml, and if the value is true
-                    // add a translucent status flag to the window.
-                    window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        setStatusBarTransparent(doOverlay);
+                    }
+                    else if(Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+                        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                    }
+                    else{
+                        LOG.e(TAG, "Translucent status bar not supported in your Android version");
+                    }
 
                     ActivityAssistant.getInstance().applyGlobalLayoutListener();
                 } else {
                     // Read 'StatusBarBackgroundColor' from config.xml, default is #000000.
                     setStatusBarBackgroundColor(preferences.getString("StatusBarBackgroundColor", "#000000"));
+
+ 					// Read 'StatusBarStyle' from config.xml, default is 'lightcontent'.
+                	setStatusBarStyle(preferences.getString("StatusBarStyle", "lightcontent"));
                 }
             }
         });
@@ -109,38 +120,6 @@ public class StatusBar extends CordovaPlugin {
         if("isStatusBarOverlayingWebview".equals(action)) {
             boolean statusBarVisible = (window.getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) == 0;
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, doOverlay && statusBarVisible));
-            return true;
-        }
-
-        if("overlaysWebView".equals(action)) {
-            this.cordova.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-
-                    try {
-                        doOverlay = args.getBoolean(0);
-                    } catch (JSONException ignore) {
-                        LOG.e(TAG, "Invalid boolean argument, please use true or false values");
-                    }
-
-                    if (doOverlay) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                            window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-                        } else {
-                            LOG.e(TAG, "Translucent status bar not supported in your Android version");
-                        }
-
-                        ActivityAssistant.getInstance().applyGlobalLayoutListener();
-                    } else {
-                        window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-                    }
-
-                    boolean statusBarVisible = (window.getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) == 0;
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, doOverlay && statusBarVisible));
-                }
-            });
             return true;
         }
 
@@ -214,9 +193,89 @@ public class StatusBar extends CordovaPlugin {
             return true;
         }
 
+        if ("overlaysWebView".equals(action)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                this.cordova.getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            doOverlay = args.getBoolean(0);
+                        } catch (JSONException ignore) {
+                            LOG.e(TAG, "Invalid boolean argument, please use true or false values");
+                        }
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            setStatusBarTransparent(doOverlay);
+                        } else if(Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+                            if(doOverlay) {
+                                window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                                window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                            } else {
+                                window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                            }
+                        }
+                        else {
+                            LOG.e(TAG, "Translucent status bar not supported in your Android version");
+                        }
+
+                        if(doOverlay) {
+                            ActivityAssistant.getInstance().applyGlobalLayoutListener();
+                        }
+                    }
+                });
+                return true;
+            }
+            else {
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, doOverlay));
+                return doOverlay == false;
+            }
+        }
+
+        if ("styleDefault".equals(action)) {
+            this.cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    setStatusBarStyle("default");
+                }
+            });
+            return true;
+        }
+
+        if ("styleLightContent".equals(action)) {
+            this.cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    setStatusBarStyle("lightcontent");
+                }
+            });
+            return true;
+        }
+
+        if ("styleBlackTranslucent".equals(action)) {
+            this.cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    setStatusBarStyle("blacktranslucent");
+                }
+            });
+            return true;
+        }
+
+        if ("styleBlackOpaque".equals(action)) {
+            this.cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    setStatusBarStyle("blackopaque");
+                }
+            });
+            return true;
+        }
+
         return false;
     }
 
+    // Only used with API 21+
     private void setStatusBarBackgroundColor(final String colorPref) {
         if (Build.VERSION.SDK_INT >= 21) {
             if (colorPref != null && !colorPref.isEmpty()) {
@@ -226,7 +285,7 @@ public class StatusBar extends CordovaPlugin {
                 window.addFlags(0x80000000); // SDK 21: WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
                 try {
                     // Using reflection makes sure any 5.0+ device will work without having to compile with SDK level 21
-                    window.getClass().getDeclaredMethod("setStatusBarColor", int.class).invoke(window, Color.parseColor(colorPref));
+                    window.getClass().getMethod("setStatusBarColor", int.class).invoke(window, Color.parseColor(colorPref));
                 } catch (IllegalArgumentException ignore) {
                     LOG.e(TAG, "Invalid hexString argument, use f.i. '#999999'");
                 } catch (Exception ignore) {
@@ -252,5 +311,54 @@ public class StatusBar extends CordovaPlugin {
         int result = (int)(statusbarHeight / densityDpi);
 
         return result;
+    }
+
+    // Only used with API 21+
+    private void setStatusBarTransparent(final boolean transparent) {
+        if (Build.VERSION.SDK_INT >= 21) {
+            final Window window = cordova.getActivity().getWindow();
+            if (transparent) {
+                window.getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+                window.setStatusBarColor(Color.TRANSPARENT);
+            }
+            else {
+                window.getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_VISIBLE);
+            }
+        }
+    }
+
+    private void setStatusBarStyle(final String style) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (style != null && !style.isEmpty()) {
+                View decorView = cordova.getActivity().getWindow().getDecorView();
+                int uiOptions = decorView.getSystemUiVisibility();
+
+                String[] darkContentStyles = {
+                    "default",
+                };
+
+                String[] lightContentStyles = {
+                    "lightcontent",
+                    "blacktranslucent",
+                    "blackopaque",
+                };
+
+                if (Arrays.asList(darkContentStyles).contains(style.toLowerCase())) {
+                    decorView.setSystemUiVisibility(uiOptions | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+                    return;
+                }
+
+                if (Arrays.asList(lightContentStyles).contains(style.toLowerCase())) {
+                    decorView.setSystemUiVisibility(uiOptions & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+                    return;
+                }
+
+                LOG.e(TAG, "Invalid style, must be either 'default', 'lightcontent' or the deprecated 'blacktranslucent' and 'blackopaque'");
+            }
+        }
     }
 }

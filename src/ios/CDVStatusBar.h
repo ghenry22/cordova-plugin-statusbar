@@ -30,6 +30,7 @@
 }
 
 @property (atomic, assign) BOOL statusBarOverlaysWebView;
+@property (atomic, assign) BOOL statusBarVisible;
 
 - (void) overlaysWebView:(CDVInvokedUrlCommand*)command;
 
@@ -47,5 +48,5 @@
 - (void) _ready:(CDVInvokedUrlCommand*)command;
 
 - (void) isStatusBarOverlayingWebview:(CDVInvokedUrlCommand*)command;
-
+- (void) getStatusBarHeight:(CDVInvokedUrlCommand*)command;
 @end
