@@ -202,16 +202,19 @@ var addStatusBarDataElement = function(){
          "StatusBar",
          "getStatusBarHeight",
         []);
+
 }
 
 
 var injectViewportMetaTag = function(){
 
-    if(device.platform.toLowerCase().indexOf(IOS_PLATFORM) == 0 && device.version.split(".")[0] >= IOS_11_VERSION){
-        var viewportMetaElem = document.getElementsByTagName("meta").namedItem("viewport");
+    if (/(iPad)|(iPhone)/i.test(navigator.userAgent)) {
+        var version = navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
 
-        if(viewportMetaElem){
-            if(!viewportMetaElem.content.includes("viewport-fit")){
+        if((version && version[1]) >= IOS_11_VERSION) {
+            var viewportMetaElem = document.getElementsByTagName("meta").namedItem("viewport");
+
+            if(viewportMetaElem && !viewportMetaElem.content.includes("viewport-fit")) {
                 viewportMetaElem.setAttribute("content", "viewport-fit=cover," + viewportMetaElem.content)
             }
         }
