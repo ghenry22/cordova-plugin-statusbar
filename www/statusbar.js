@@ -211,7 +211,7 @@ var injectViewportMetaTag = function(){
     if (/(iPad)|(iPhone)/i.test(navigator.userAgent)) {
         var version = navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
 
-        if(version != null && !isNaN(version[1])){
+        if(Array.isArray(version) && version.length > 1 && !isNaN(version[1])){
             if(Number(version[1]) >= IOS_11_VERSION){
                 var viewportMetaElem = document.getElementsByTagName("meta").namedItem("viewport");
                 
