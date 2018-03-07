@@ -211,11 +211,13 @@ var injectViewportMetaTag = function(){
     if (/(iPad)|(iPhone)/i.test(navigator.userAgent)) {
         var version = navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
 
-        if(Number(version && version[1]) >= IOS_11_VERSION) {
-            var viewportMetaElem = document.getElementsByTagName("meta").namedItem("viewport");
-
-            if(viewportMetaElem && !viewportMetaElem.content.includes("viewport-fit")) {
-                viewportMetaElem.setAttribute("content", "viewport-fit=cover," + viewportMetaElem.content)
+        if(version != null && !isNaN(version[1])){
+            if(Number(version[1]) >= IOS_11_VERSION){
+                var viewportMetaElem = document.getElementsByTagName("meta").namedItem("viewport");
+                
+                if(viewportMetaElem && !viewportMetaElem.content.includes("viewport-fit")) {
+                    viewportMetaElem.setAttribute("content", "viewport-fit=cover," + viewportMetaElem.content)
+                }
             }
         }
     }
