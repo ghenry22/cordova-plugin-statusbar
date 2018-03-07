@@ -24,7 +24,7 @@
 var exec = require('cordova/exec');
 var channel = require('cordova/channel');
 
-var IOS_11_VERSION = "11";
+var IOS_11_VERSION = 11;
 
 var namedColors = {
     "black": "#000000",
@@ -161,7 +161,7 @@ var injectViewportMetaTag = function(){
     if (/(iPad)|(iPhone)/i.test(navigator.userAgent)) {
         var version = navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
 
-        if((version && version[1]) >= IOS_11_VERSION) {
+        if(Number(version && version[1]) >= IOS_11_VERSION) {
             var viewportMetaElem = document.getElementsByTagName("meta").namedItem("viewport");
 
             if(viewportMetaElem && !viewportMetaElem.content.includes("viewport-fit")) {
