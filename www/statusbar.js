@@ -24,6 +24,8 @@
 var exec = require('cordova/exec');
 var channel = require('cordova/channel');
 
+var IOS_11_VERSION = 11;
+
 var namedColors = {
     "black": "#000000",
     "darkGray": "#A9A9A9",
@@ -150,6 +152,26 @@ var addStatusBarDataElement = function(){
          "StatusBar", 
          "getStatusBarHeight",
         []);
+
+}
+
+
+var injectViewportMetaTag = function(){
+
+    if (/(iPad)|(iPhone)/i.test(navigator.userAgent)) {
+        var version = navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
+
+        if(Array.isArray(version) && version.length > 1 && !isNaN(version[1])){
+            if(Number(version[1]) >= IOS_11_VERSION){
+                var viewportMetaElem = document.getElementsByTagName("meta").namedItem("viewport");
+                
+                if(viewportMetaElem && !viewportMetaElem.content.includes("viewport-fit")) {
+                    viewportMetaElem.setAttribute("content", "viewport-fit=cover," + viewportMetaElem.content)
+                }
+            }
+        }
+    }
+
 }
 
 
@@ -171,4 +193,6 @@ channel.deviceready.subscribe(function () {
     
   
     onVisibilityChange();
+    
+    injectViewportMetaTag();
 });
