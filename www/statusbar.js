@@ -46,6 +46,8 @@ var namedColors = {
 var StatusBar = {
     isVisible: true,
 
+    disableViewportFitiOS12: false,
+
     overlaysWebView: function (doOverlay) {
         exec(checkIfStatusBarOverlaysWebview, null, "StatusBar", "overlaysWebView", [doOverlay]);
     },
@@ -212,9 +214,9 @@ var injectViewportMetaTag = function(){
         var version = navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
 
         if(Array.isArray(version) && version.length > 1 && !isNaN(version[1])){
-            if(Number(version[1]) >= IOS_11_VERSION){
+            if(Number(version[1]) == IOS_11_VERSION || (Number(version[1]) > IOS_11_VERSION && !StatusBar.disableViewportFitiOS12)){
                 var viewportMetaElem = document.getElementsByTagName("meta").namedItem("viewport");
-                
+
                 if(viewportMetaElem && !viewportMetaElem.content.includes("viewport-fit")) {
                     viewportMetaElem.setAttribute("content", "viewport-fit=cover," + viewportMetaElem.content)
                 }
