@@ -178,6 +178,17 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
     [self.commandDelegate sendPluginResult:result callbackId:_eventsCallbackId];
 }
 
+- (void)disableViewportFitForiOS12:(BOOL)disable {
+    if (_eventsCallbackId == nil) {
+        return;
+    }
+    
+    NSDictionary* payload = @{@"type": @"viewport", @"disableiOS12":@(disable)};
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:payload];
+    [result setKeepCallbackAsBool:YES];
+    [self.commandDelegate sendPluginResult:result callbackId:_eventsCallbackId];
+}
+
 - (void) _ready:(CDVInvokedUrlCommand*)command
 {
     _eventsCallbackId = command.callbackId;
@@ -189,6 +200,10 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
             [self resizeWebView];
         }
     }
+    
+    BOOL disableViewportFit = [[self.commandDelegate.settings objectForKey:[@"DisableViewportFitForiOS12" lowercaseString]] boolValue];
+    [self disableViewportFitForiOS12:disableViewportFit];
+    
 }
 
 - (void) initializeStatusBarBackgroundView
