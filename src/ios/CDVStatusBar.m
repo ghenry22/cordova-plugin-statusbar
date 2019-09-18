@@ -25,6 +25,7 @@
 
 #import "CDVStatusBar.h"
 #import <objc/runtime.h>
+#import <WebKit/WebKit.h>
 #import <Cordova/CDVViewController.h>
 
 static const void *kHideStatusBar = &kHideStatusBar;
@@ -183,7 +184,9 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
         return;
     }
     
-    NSDictionary* payload = @{@"type": @"viewport", @"disableiOS12":@(disable)};
+    // https://github.com/apache/cordova-ios/issues/417 does not apply to WKWebView, therefore always return NO when running there
+    // This entire workaround to disable viewport fit injection is to be _removed_ once WKWebView is the _sole_ option
+    NSDictionary* payload = @{@"type": @"viewport", @"disableiOS12": [self.webView isKindOfClass: [WKWebView class]] ? @(NO) : @(disable)};
     CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:payload];
     [result setKeepCallbackAsBool:YES];
     [self.commandDelegate sendPluginResult:result callbackId:_eventsCallbackId];
