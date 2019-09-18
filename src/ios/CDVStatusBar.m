@@ -197,7 +197,6 @@ static NSString* const StatusBarStaticChannel = @"StatusBarStaticChannel";
     if (_eventsCallbackId == nil) {
         return;
     }
-
     // https://github.com/apache/cordova-ios/issues/417 does not apply to WKWebView, therefore always return NO when running there
     // This entire workaround to disable viewport fit injection is to be _removed_ once WKWebView is the _sole_ option
     NSDictionary* payload = @{@"type": @"viewport", @"disableiOS12": [self.webView isKindOfClass: [WKWebView class]] ? @(NO) : @(disable)};
