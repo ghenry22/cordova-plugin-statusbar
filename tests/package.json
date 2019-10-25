@@ -1,6 +1,10 @@
 {
   "name": "cordova-plugin-statusbar-tests",
+<<<<<<< HEAD
   "version": "3.0.0+0.1.0",
+=======
+  "version": "2.4.3-OS",
+>>>>>>> 8db5f5f (chore(release): raise version to 2.4.3-OS)
   "description": "",
   "cordova": {
     "id": "cordova-plugin-statusbar-tests",
