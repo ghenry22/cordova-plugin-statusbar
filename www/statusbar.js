@@ -147,6 +147,7 @@ var addStatusBarDataElement = function(){
    
     var getStatusBarHeight = function (height){
         document.body.setAttribute("data-status-bar-height",height);
+        document.body.style.setProperty('--status-bar-height', height + "px");
     };
 
     exec(getStatusBarHeight, 
