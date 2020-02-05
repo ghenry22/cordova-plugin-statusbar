@@ -203,3 +203,12 @@ channel.deviceready.subscribe(function () {
     onVisibilityChange();
         
 });
+
+// Called by the native side when a configuration change
+cordova.callbacks["StatusBarStaticChannel"] = {
+    success: function() {
+        onVisibilityChange();
+    },
+    fail: function() {
+    }
+};
