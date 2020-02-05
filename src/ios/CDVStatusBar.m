@@ -110,7 +110,6 @@ static NSString* const StatusBarStaticChannel = @"StatusBarStaticChannel";
         [weakSelf resizeStatusBarBackgroundView];
         [weakSelf resizeWebView];
     });
-
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [pluginResult setKeepCallbackAsBool:YES];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:StatusBarStaticChannel];
