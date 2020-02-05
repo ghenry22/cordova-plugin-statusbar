@@ -71,7 +71,7 @@ public class StatusBar extends CordovaPlugin {
                 // by the Cordova.
                 Window window = cordova.getActivity().getWindow();
                 window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                
+
                 // Allows app to overlap cutout area from device when in landscape mode (same as iOS)
                 // More info: https://developer.android.com/reference/android/R.attr.html#windowLayoutInDisplayCutoutMode
                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
