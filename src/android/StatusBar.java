@@ -21,6 +21,7 @@ package org.apache.cordova.statusbar;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -43,6 +44,7 @@ import java.util.Arrays;
 
 public class StatusBar extends CordovaPlugin {
     private static final String TAG = "StatusBar";
+    private static final String CORDOVA_STATIC_CHANNEL = "StatusBarStaticChannel";
 
     private boolean doOverlay;
 
@@ -367,4 +369,13 @@ public class StatusBar extends CordovaPlugin {
             }
         }
     }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+        pluginResult.setKeepCallback(true);
+        webView.sendPluginResult(pluginResult, CORDOVA_STATIC_CHANNEL);
+    }
+
 }

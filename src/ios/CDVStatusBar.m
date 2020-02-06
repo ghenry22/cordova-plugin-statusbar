@@ -31,6 +31,8 @@
 static const void *kHideStatusBar = &kHideStatusBar;
 static const void *kStatusBarStyle = &kStatusBarStyle;
 
+static NSString* const StatusBarStaticChannel = @"StatusBarStaticChannel";
+
 @interface CDVViewController (StatusBar)
 
 @property (nonatomic, retain) id sb_hideStatusBar;
@@ -108,6 +110,10 @@ static const void *kStatusBarStyle = &kStatusBarStyle;
         [weakSelf resizeStatusBarBackgroundView];
         [weakSelf resizeWebView];
     });
+    
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [pluginResult setKeepCallbackAsBool:YES];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:StatusBarStaticChannel];
 }
 
 - (void)pluginInitialize

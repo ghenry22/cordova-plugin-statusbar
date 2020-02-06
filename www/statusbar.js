@@ -147,6 +147,7 @@ var addStatusBarDataElement = function(){
    
     var getStatusBarHeight = function (height){
         document.body.setAttribute("data-status-bar-height",height);
+        document.body.style.setProperty('--status-bar-height', height + "px");
     };
 
     exec(getStatusBarHeight, 
@@ -203,3 +204,12 @@ channel.deviceready.subscribe(function () {
     onVisibilityChange();
         
 });
+
+// Called by the native side when a configuration change
+cordova.callbacks["StatusBarStaticChannel"] = {
+    success: function() {
+        onVisibilityChange();
+    },
+    fail: function() {
+    }
+};
