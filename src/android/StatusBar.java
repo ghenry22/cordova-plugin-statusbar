@@ -16,18 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
 package org.apache.cordova.statusbar;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.res.Configuration;
-import android.content.res.TypedArray;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.os.Build;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -60,18 +56,19 @@ public class StatusBar extends CordovaPlugin {
         LOG.v(TAG, "StatusBar: initialization");
         super.initialize(cordova, webView);
 
-        this.cordova.getActivity().runOnUiThread(new Runnable() {
+        Activity activity = cordova.getActivity();
+        ActivityAssistant.getInstance().assistActivity(activity);
+
+        activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 doOverlay = preferences.getBoolean("StatusBarOverlaysWebView", false);
-
-                ActivityAssistant.getInstance().assistActivity(cordova.getActivity());
 
                 // Clear flag FLAG_FORCE_NOT_FULLSCREEN which is set initially
                 // by the Cordova.
                 Window window = cordova.getActivity().getWindow();
                 window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                
+
                 // Allows app to overlap cutout area from device when in landscape mode (same as iOS)
                 // More info: https://developer.android.com/reference/android/R.attr.html#windowLayoutInDisplayCutoutMode
                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -98,8 +95,8 @@ public class StatusBar extends CordovaPlugin {
                     // Read 'StatusBarBackgroundColor' from config.xml, default is #000000.
                     setStatusBarBackgroundColor(preferences.getString("StatusBarBackgroundColor", "#000000"));
 
- 					// Read 'StatusBarStyle' from config.xml, default is 'lightcontent'.
-                	setStatusBarStyle(preferences.getString("StatusBarStyle", "lightcontent"));
+                    // Read 'StatusBarStyle' from config.xml, default is 'lightcontent'.
+                    setStatusBarStyle(preferences.getString("StatusBarStyle", "lightcontent"));
                 }
             }
         });
@@ -346,13 +343,13 @@ public class StatusBar extends CordovaPlugin {
                 int uiOptions = decorView.getSystemUiVisibility();
 
                 String[] darkContentStyles = {
-                    "default",
+                        "default",
                 };
 
                 String[] lightContentStyles = {
-                    "lightcontent",
-                    "blacktranslucent",
-                    "blackopaque",
+                        "lightcontent",
+                        "blacktranslucent",
+                        "blackopaque",
                 };
 
                 if (Arrays.asList(darkContentStyles).contains(style.toLowerCase())) {
