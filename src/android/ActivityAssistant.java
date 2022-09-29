@@ -60,7 +60,6 @@ public class ActivityAssistant {
         return usableHeight;
     }
 
-<<<<<<< HEAD
     public void applyGlobalLayoutListener() {
         if (layoutListenerApplied) {
             return;
@@ -89,29 +88,5 @@ public class ActivityAssistant {
                 });
             }
         });
-=======
-    public void applyGlobalLayoutListener(){
-        if(this.onGlobalLayoutListener == null){
-            this.onGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
-                public void onGlobalLayout() {
-                    possiblyResizeChildOfContent();
-                }
-            };
-
-            this.layoutListenerApplied = false;
-        }
-
-        if(!this.layoutListenerApplied){
-            this.mChildOfContent.getViewTreeObserver().addOnGlobalLayoutListener(this.onGlobalLayoutListener);
-            this.layoutListenerApplied = true;
-        }
-    }
-
-    public void removeGlobalLayoutListener(){
-        if(this.layoutListenerApplied) {
-            this.mChildOfContent.getViewTreeObserver().removeOnGlobalLayoutListener(this.onGlobalLayoutListener);
-            this.layoutListenerApplied = false;
-        }
->>>>>>> d78efd3 (Fix last commit)
     }
 }

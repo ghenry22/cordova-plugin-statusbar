@@ -16,13 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
 package org.apache.cordova.statusbar;
 
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -64,8 +63,6 @@ public class StatusBar extends CordovaPlugin {
             @Override
             public void run() {
                 doOverlay = preferences.getBoolean("StatusBarOverlaysWebView", false);
-
-                ActivityAssistant.getInstance().assistActivity(cordova.getActivity());
 
                 // Clear flag FLAG_FORCE_NOT_FULLSCREEN which is set initially
                 // by the Cordova.
@@ -355,13 +352,13 @@ public class StatusBar extends CordovaPlugin {
                 int uiOptions = decorView.getSystemUiVisibility();
 
                 String[] darkContentStyles = {
-                    "default",
+                        "default",
                 };
 
                 String[] lightContentStyles = {
-                    "lightcontent",
-                    "blacktranslucent",
-                    "blackopaque",
+                        "lightcontent",
+                        "blacktranslucent",
+                        "blackopaque",
                 };
 
                 if (Arrays.asList(darkContentStyles).contains(style.toLowerCase())) {
