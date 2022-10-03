@@ -3,9 +3,9 @@ package org.apache.cordova.statusbar;
 import android.app.Activity;
 import android.graphics.Rect;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 
 public class ActivityAssistant {
 
@@ -24,45 +24,28 @@ public class ActivityAssistant {
     }
 
 
-    public void assistActivity(Activity activity) {
-        this.activity = activity;
-        FrameLayout content = (FrameLayout) activity.findViewById(android.R.id.content);
-        this.mChildOfContent = content.getChildAt(0);
-        this.frameLayoutParams = (FrameLayout.LayoutParams) mChildOfContent.getLayoutParams();
-
-    }
-
     private Activity activity;
-    private View mChildOfContent;
     private int usableHeightPrevious;
-    @SuppressWarnings("FieldCanBeLocal")
-    private FrameLayout.LayoutParams frameLayoutParams;
-    private ViewTreeObserver.OnGlobalLayoutListener onGlobalLayoutListener;
     private boolean layoutListenerApplied;
 
-    private ActivityAssistant() {
-        this.onGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                possiblyResizeChildOfContent();
-            }
-        };
-        this.layoutListenerApplied = false;
+    public void assistActivity(Activity activity) {
+        this.activity = activity;
     }
 
-    private void possiblyResizeChildOfContent() {
-        int usableHeightNow = computeUsableHeight();
+    private void possiblyResizeChildOfContent(View childOfContent) {
+        int usableHeightNow = computeUsableHeight(childOfContent);
         if (usableHeightNow != this.usableHeightPrevious) {
-            this.frameLayoutParams.height = usableHeightNow;
-            this.mChildOfContent.setLayoutParams(this.frameLayoutParams);
-            this.mChildOfContent.requestLayout();
+            ViewGroup.LayoutParams params = childOfContent.getLayoutParams();
+            params.height = usableHeightNow;
+            childOfContent.setLayoutParams(params);
+            childOfContent.requestLayout();
             this.usableHeightPrevious = usableHeightNow;
         }
     }
 
-    private int computeUsableHeight() {
+    private int computeUsableHeight(View childOfContent) {
         Rect r = new Rect();
-        this.mChildOfContent.getWindowVisibleDisplayFrame(r);
+        childOfContent.getWindowVisibleDisplayFrame(r);
 
         boolean fullScreen = (activity.getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
         boolean translucentStatusBar = (activity.getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS) != 0
@@ -77,27 +60,33 @@ public class ActivityAssistant {
         return usableHeight;
     }
 
-    public void applyGlobalLayoutListener(){
-        if(this.onGlobalLayoutListener == null){
-            this.onGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
-                public void onGlobalLayout() {
-                    possiblyResizeChildOfContent();
+    public void applyGlobalLayoutListener() {
+        if (layoutListenerApplied) {
+            return;
+        }
+
+        activity.getWindow().getDecorView().post(new Runnable() {
+            @Override
+            public void run() {
+                // This should only run when the view hierarchy is ready
+                // We're still going to be safe here, just in case
+                ViewGroup content = activity.findViewById(android.R.id.content);
+                if (content == null) {
+                    return;
                 }
-            };
 
-            this.layoutListenerApplied = false;
-        }
+                final View childOfContent = content.getChildAt(0);
+                if (childOfContent == null) {
+                    return;
+                }
 
-        if(!this.layoutListenerApplied){
-            this.mChildOfContent.getViewTreeObserver().addOnGlobalLayoutListener(this.onGlobalLayoutListener);
-            this.layoutListenerApplied = true;
-        }
-    }
-
-    public void removeGlobalLayoutListener(){
-        if(this.layoutListenerApplied) {
-            this.mChildOfContent.getViewTreeObserver().removeOnGlobalLayoutListener(this.onGlobalLayoutListener);
-            this.layoutListenerApplied = false;
-        }
+                layoutListenerApplied = true;
+                childOfContent.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    public void onGlobalLayout() {
+                        possiblyResizeChildOfContent(childOfContent);
+                    }
+                });
+            }
+        });
     }
 }
